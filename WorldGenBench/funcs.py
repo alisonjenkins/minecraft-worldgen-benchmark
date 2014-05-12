@@ -8,6 +8,7 @@ import shlex
 import time
 import re
 import datetime
+import pdb
 
 def load_bench_config(config_path):
     if not os.path.exists(config_path):
@@ -129,36 +130,33 @@ def await_completion(path):
     server_logfile = open(server_logfile_path)
     loglines = follow(server_logfile)
 
-    re_complete = re.compile('For reference, the main world\'s spawn location is at X: (?P<X>[\-0-9.]+) Y: (?P<Y>[\-0-9.]+) Z: (?P<Z>[\-0-9.]+)')
-#     re_server_started = re.compile('Done \((?P<starttime>.*?)s\)! For help, type \"help\" or \"?\"')
-#     server_spawn = False
-#     start_time = False
-# 
-#     for line in loglines:
-#         print(line),
-#         if server_spawn == False:
-#             match = re_server_spawn.search(line)
-#             if match:
-#                 server_spawn = {}
-#                 server_spawn['X'] = match.group('X')
-#                 server_spawn['Y'] = match.group('Y')
-#                 server_spawn['Z'] = match.group('Z')
-#                 print("Found server spawn at %s, %s, %s" % (server_spawn['X'], server_spawn['Y'], server_spawn['Z']))
-#             # else:
-#             #     print("%s did not match spawn re." % line)
-#         if start_time == False:
-#             match = re_server_started.search(line)
-#             if match:
-#                 start_time = match.group('starttime')
-#                 print('Server started. Took %s' % start_time)
-#             # else:
-#             #     print("%s did not match server started re" % line)
-#         if start_time and server_spawn:
-#             break
-# 
-#     return [server_spawn, start_time]
-# 
-# 
+    re_complete = re.compile('\[INFO\] \[WorldBorder\] \[Fill\] task successfully completed!')
+    done_time = False
+
+    for line in loglines:
+        print(line),
+        match = re_complete.search(line)
+        if match:
+            done_time = datetime.datetime.now()
+            print("Generation completed")
+            break
+
+    return done_time
+
+def benchmark_result(start_time, end_time):
+    result = end_time - start_time
+    return result
+
+def stop_server():
+    commands = [
+            'tmux kill-session -t worldgenbench',
+            ]
+    for command in commands:
+        subprocess.Popen(shlex.split(command), cwd='server')
+
+def output_results(time, mods=None):
+    print(str(time.seconds) + "." + str(time.microseconds))
+
 def follow(thefile):
     thefile.seek(0,2)      # Go to the end of the file
     while True:

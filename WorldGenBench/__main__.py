@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import os
 from WorldGenMod import WorldGenMod
-from funcs import clear_mods_dir, load_bench_config, delete_old_logs, delete_old_world, start_server, wait_for_server_start, start_generation, delete_worldborder_config
+from funcs import clear_mods_dir, load_bench_config, delete_old_logs, delete_old_world, start_server, wait_for_server_start, start_generation, delete_worldborder_config, await_completion, benchmark_result, stop_server, output_results
 
 if __name__ == '__main__':
     # clear mods dir
-    clear_mods_dir('server/mods')
+    # clear_mods_dir('server/mods')
 
     # load benchmark config.
     config = load_bench_config('bench_config.ini')
@@ -32,6 +32,13 @@ if __name__ == '__main__':
     start_time = start_generation(1500, spawn_coords['X'], spawn_coords['Z'])
 
     # watch log for complete message
-    # end_time = await_completion('server')
+    end_time = await_completion('server')
 
-    # bench_time = benchmark_result(start_time, end_time)
+    # work out benchmark time
+    bench_time = benchmark_result(start_time, end_time)
+
+    # stop the server and kill the tmux session
+    stop_server()
+
+    # output the result of the benchmark
+    output_results(bench_time)
